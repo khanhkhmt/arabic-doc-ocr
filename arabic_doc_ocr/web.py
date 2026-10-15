@@ -25,7 +25,6 @@ from .text import agreement, compare_words
 TYPES = {
     "Handwritten — ft3 reads, ft4 cross-checks": config.HANDWRITTEN,
     "Printed — dots reads, ft3 cross-checks": config.PRINTED,
-    "Mixed — chosen per block (experimental)": config.MIXED,
 }
 STATE: dict = {"pipeline": None, "args": {}}
 

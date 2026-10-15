@@ -62,7 +62,7 @@ bash run_web.sh
 ```
 
 `--type`: **handwritten** (ft3 gives the main text), **printed** (dots gives the main text — ft3 only reaches ~80 %
-on typewritten text), **mixed** (chosen per block by how much dots and ft3 agree; experimental, not measured).
+on typewritten text). A page that is mostly typed with a few handwritten notes → printed.
 
 GPUs: by default dots runs on `cuda:0` and the line reader on `cuda:1` if present. With one GPU, `--offload auto`
 keeps both models on it if it has ≥ 22 GB, otherwise only the model in use stays on the GPU — the other is moved to

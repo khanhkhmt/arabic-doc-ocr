@@ -135,7 +135,7 @@ def _pipe(blocks=BLOCKS) -> Pipeline:
     return p
 
 
-@pytest.mark.parametrize("page_type", [config.HANDWRITTEN, config.PRINTED, config.MIXED])
+@pytest.mark.parametrize("page_type", [config.HANDWRITTEN, config.PRINTED])
 def test_pipeline_and_outputs(tmp_path, page_type, monkeypatch):
     monkeypatch.setattr("arabic_doc_ocr.pipeline.kraken_page", lambda img: None)  # projection only
     pipe = _pipe()
@@ -147,7 +147,7 @@ def test_pipeline_and_outputs(tmp_path, page_type, monkeypatch):
     assert 2 not in r.sources  # picture
     assert r.lines and all(L.block != 3 for L in r.lines)  # Hebrew block not given to the line readers
     src = r.sources[1][0]
-    assert src == ("dots" if page_type in (config.PRINTED, config.MIXED) else "ft3")
+    assert src == ("dots" if page_type == config.PRINTED else "ft3")
     w = write_all(tmp_path, "doc", res)
     names = {p.name for p in w["files"]}
     assert {"doc_all.zip", "doc.docx", "doc_main.txt", "doc_ft3.txt", "doc_ft4.txt", "doc_review.html", "doc.json",

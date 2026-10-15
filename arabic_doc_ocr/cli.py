@@ -120,9 +120,9 @@ def cmd_page(a) -> int:
     types = [t.strip() for t in a.type.split(",")]
     if len(types) == 1:
         types = types * len(a.inputs)
-    bad = [t for t in types if t not in (config.HANDWRITTEN, config.PRINTED, config.MIXED)]
+    bad = [t for t in types if t not in (config.HANDWRITTEN, config.PRINTED)]
     if bad or len(types) != len(a.inputs):
-        sys.exit(f"--type: one of handwritten / printed / mixed, or one per input ({len(a.inputs)}); got {a.type!r}")
+        sys.exit(f"--type: handwritten or printed, or one per input ({len(a.inputs)}); got {a.type!r}")
     pipe = Pipeline(**_pipeline_kwargs(a))
     out = Path(a.out)
     summary = []
@@ -185,8 +185,7 @@ def main(argv=None) -> int:
     p = sub.add_parser("page", help="read documents (images / PDF)")
     p.add_argument("inputs", nargs="+")
     p.add_argument("--type", default=config.HANDWRITTEN,
-                   help="text on the pages: handwritten (ft3 main text), printed (dots main text), mixed (per block, "
-                        "experimental); one value for all inputs or a comma list, one per input")
+                   help="text on the pages: handwritten (ft3 main text), printed (dots main text); one value for all inputs or a comma list, one per input")
     p.add_argument("--pages", default="", help="PDF pages, e.g. 1-3,5 (default: all)")
     p.add_argument("--out", default="ocr_out")
     p.add_argument("--quiet", action="store_true")

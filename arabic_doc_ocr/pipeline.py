@@ -4,7 +4,7 @@
                ─► Kraken line segmentation on the whole page, lines assigned to dots text blocks
                ─► ft3 and ft4 read every line ─► main text per block:
                     handwritten page → ft3 (ft4 = cross-check)   printed page → dots text (ft3 = cross-check)
-                    mixed page → per block (experimental)        Hebrew block → dots text (line models read Arabic only)
+                    Hebrew block → dots text (line models read Arabic only)
 
     from arabic_doc_ocr.pipeline import Pipeline, load_pages
     p = Pipeline()                                   # GPUs picked automatically
@@ -23,7 +23,7 @@ from . import config
 from .lines import assign_to_blocks, crop_poly, kraken_page, projection_lines
 from .text import agreement, fix_arabic, is_hebrew
 
-PAGE_TYPES = (config.HANDWRITTEN, config.PRINTED, config.MIXED)
+PAGE_TYPES = (config.HANDWRITTEN, config.PRINTED)
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}
 
 
@@ -319,8 +319,6 @@ class Pipeline:
                     src = config.MAIN
                 elif page_type == config.PRINTED or not joined.strip():
                     src = "dots"
-                elif page_type == config.MIXED:
-                    src = "dots" if agree is not None and agree >= config.MIXED_PRINTED_AGREEMENT else config.MAIN
                 else:
                     src = config.MAIN
             res.sources[bi] = (src, agree)

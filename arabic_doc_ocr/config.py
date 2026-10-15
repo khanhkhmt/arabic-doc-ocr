@@ -47,7 +47,4 @@ OFFLOAD_CPU_MIN_RAM_GB = 24
 TEXT_CATS = {"Text", "Title", "Section-header", "List-item", "Caption", "Footnote", "Page-header", "Page-footer"}
 
 # --- page types (which reader gives the main text) ------------------------------------------------------------------
-HANDWRITTEN, PRINTED, MIXED = "handwritten", "printed", "mixed"
-# mixed pages: a block where dots and ft3 agree on ≥ 35 % of the words is treated as printed
-# (dots reads handwriting with only ~5–10 % correct words). Experimental — not measured.
-MIXED_PRINTED_AGREEMENT = 0.35
+HANDWRITTEN, PRINTED = "handwritten", "printed"
