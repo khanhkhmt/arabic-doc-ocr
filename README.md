@@ -40,7 +40,7 @@ Expected (the measured numbers and how they are derived are in
 ## Install
 
 ```bash
-git clone <this repository> arabic-doc-ocr && cd arabic-doc-ocr
+git clone https://github.com/khanhkhmt/arabic-doc-ocr.git && cd arabic-doc-ocr
 bash install.sh                      # .venv + Kraken venv + segmentation model + all models (~15 GB download)
 .venv/bin/python -m arabic_doc_ocr check     # must end with "OK"
 ```
