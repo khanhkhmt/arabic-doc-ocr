@@ -1,0 +1,17 @@
+# torch is installed separately (install.sh): it must match the machine's CUDA driver.
+transformers==4.56.1      # tested version; others changed dots.mocr / Qwen2.5-VL generation
+peft>=0.17,<0.19
+accelerate>=1.0
+qwen-vl-utils==0.0.14
+huggingface_hub>=0.34,<1.0
+pillow>=10
+numpy>=1.26
+pydantic>=2
+pymupdf>=1.24
+pypdfium2>=4
+python-docx>=1.2
+lxml>=5
+gradio>=5,<7
+rapidfuzz>=3
+psutil>=5
+requests>=2

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arabic-doc-ocr"
+version = "1.0.0"
+description = "OCR for old Arabic legal documents: printed (dots.mocr) and handwritten (Baseer-Nakba + LoRA ft3/ft4)"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.scripts]
+arabic-doc-ocr = "arabic_doc_ocr.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["arabic_doc_ocr*"]
+
+[tool.setuptools.package-data]
+"arabic_doc_ocr._vendor.dots_ocr" = ["LICENSE", "dots.ocr LICENSE AGREEMENT", "VENDORED.md"]
