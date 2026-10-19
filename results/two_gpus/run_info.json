@@ -1,0 +1,139 @@
+{
+ "loads": {
+  "dots": 1,
+  "htr": 1
+ },
+ "offload": "none",
+ "dots_device": "cuda:0",
+ "htr_device": "cuda:1",
+ "documents": [
+  {
+   "input": "examples/page_1/page.jpeg",
+   "type": "printed",
+   "pages": 1,
+   "seconds": 320.4,
+   "per_page": [
+    {
+     "dots_scale": 1.5,
+     "dots_seconds": 95.3,
+     "dots_gpu_peak_gb": {
+      "cuda:0": 10.96
+     },
+     "dots_tokens": 811,
+     "dots_hit_max_tokens": false,
+     "dots_stopped_loop": false,
+     "dots_layout": "ok",
+     "segmentation": [
+      "kraken",
+      "projection"
+     ],
+     "segmentation_seconds": 73.8,
+     "hebrew_blocks": 0,
+     "notes": [],
+     "htr_seconds": 93.3,
+     "htr_gpu_peak_gb": {
+      "cuda:1": 7.64
+     },
+     "lines": 24,
+     "page_type": "printed"
+    }
+   ]
+  },
+  {
+   "input": "examples/page_2/page.jpeg",
+   "type": "handwritten",
+   "pages": 1,
+   "seconds": 376.6,
+   "per_page": [
+    {
+     "dots_scale": 1.5,
+     "dots_seconds": 151.7,
+     "dots_gpu_peak_gb": {
+      "cuda:0": 10.96
+     },
+     "dots_tokens": 1690,
+     "dots_hit_max_tokens": false,
+     "dots_stopped_loop": false,
+     "dots_layout": "ok",
+     "segmentation": [
+      "kraken",
+      "projection"
+     ],
+     "segmentation_seconds": 67.0,
+     "hebrew_blocks": 0,
+     "notes": [],
+     "htr_seconds": 157.6,
+     "htr_gpu_peak_gb": {
+      "cuda:1": 7.65
+     },
+     "lines": 36,
+     "page_type": "handwritten"
+    }
+   ]
+  },
+  {
+   "input": "examples/page_3/page.jpeg",
+   "type": "printed",
+   "pages": 1,
+   "seconds": 517.2,
+   "per_page": [
+    {
+     "dots_scale": 1.5,
+     "dots_seconds": 213.3,
+     "dots_gpu_peak_gb": {
+      "cuda:0": 10.96
+     },
+     "dots_tokens": 2659,
+     "dots_hit_max_tokens": false,
+     "dots_stopped_loop": false,
+     "dots_layout": "ok",
+     "segmentation": [
+      "kraken",
+      "projection"
+     ],
+     "segmentation_seconds": 69.8,
+     "hebrew_blocks": 13,
+     "notes": [],
+     "htr_seconds": 233.8,
+     "htr_gpu_peak_gb": {
+      "cuda:1": 7.64
+     },
+     "lines": 34,
+     "page_type": "printed"
+    }
+   ]
+  },
+  {
+   "input": "examples/page_4/page.jpeg",
+   "type": "printed",
+   "pages": 1,
+   "seconds": 248.2,
+   "per_page": [
+    {
+     "dots_scale": 1.6,
+     "dots_seconds": 113.7,
+     "dots_gpu_peak_gb": {
+      "cuda:0": 12.21
+     },
+     "dots_tokens": 592,
+     "dots_hit_max_tokens": false,
+     "dots_stopped_loop": false,
+     "dots_layout": "ok",
+     "segmentation": [
+      "kraken",
+      "projection"
+     ],
+     "segmentation_seconds": 75.1,
+     "hebrew_blocks": 0,
+     "notes": [],
+     "htr_seconds": 59.2,
+     "htr_gpu_peak_gb": {
+      "cuda:1": 7.65
+     },
+     "lines": 19,
+     "page_type": "printed"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,49 @@
+== 1/4 main venv: /kaggle/working/arabic-doc-ocr/.venv
+   system torch with CUDA found → reused
+== 2/4 Kraken venv (CPU torch): /root/.cache/arabic_doc_ocr/kraken_venv
+Error in sitecustomize; set PYTHONVERBOSE for traceback:
+ModuleNotFoundError: No module named 'wrapt'
+kraken, version 7.1.1
+== 3/4 Muharaf line segmentation model (CC BY 4.0): /root/.cache/arabic_doc_ocr/muharaf_seg_best.mlmodel
+-rw-r--r-- 1 root root 5069618 Oct 19 04:03 /root/.cache/arabic_doc_ocr/muharaf_seg_best.mlmodel
+== 4/4 models
+Fetching 22 files:   0%|          | 0/22 [00:00<?, ?it/s]Fetching 22 files:   5%|▍         | 1/22 [00:00<00:03,  5.63it/s]Fetching 22 files:  59%|█████▉    | 13/22 [00:27<00:19,  2.16s/it]Fetching 22 files: 100%|██████████| 22/22 [00:27<00:00,  1.25s/it]
+dots-studio/dots.mocr → /root/.cache/huggingface/hub/models--dots-studio--dots.mocr/snapshots/e539fbb52280393adc081b289ec597430a0f9031 (28 s)
+Fetching 22 files:   0%|          | 0/22 [00:00<?, ?it/s]Fetching 22 files:  36%|███▋      | 8/22 [00:00<00:00, 76.00it/s]Fetching 22 files:  36%|███▋      | 8/22 [00:12<00:00, 76.00it/s]Fetching 22 files:  41%|████      | 9/22 [00:36<01:11,  5.47s/it]Fetching 22 files: 100%|██████████| 22/22 [00:36<00:00,  1.64s/it]
+Misraj/Baseer__Nakba → /root/.cache/huggingface/hub/models--Misraj--Baseer__Nakba/snapshots/0461bb3314b913dad700ed12e3ac116188f00266 (36 s)
+Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files:  12%|█▎        | 1/8 [00:00<00:00,  7.49it/s]Fetching 8 files:  38%|███▊      | 3/8 [00:03<00:06,  1.36s/it]Fetching 8 files: 100%|██████████| 8/8 [00:03<00:00,  2.16it/s]
+khanh99/htr-baseer-nakba-ft → /root/.cache/huggingface/hub/models--khanh99--htr-baseer-nakba-ft/snapshots/6b21b6bcd9aa89cee7a673c2ca8a3446d1ce4629 (4 s)
+Kraken segmentation model → /root/.cache/arabic_doc_ocr/muharaf_seg_best.mlmodel
+2026-10-19 04:05:10.531176: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1792382710.715369    5035 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1792382710.766975    5035 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1792382711.205210    5035 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792382711.205244    5035 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792382711.205248    5035 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792382711.205252    5035 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-10-19 04:05:11.262335: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+arabic_doc_ocr 1.0.0 · Python 3.12.12 · Linux-6.18.48+-x86_64-with-glibc2.35
+  torch          2.10.0+cu128
+  transformers   4.56.1
+  peft           0.18.1
+  qwen_vl_utils  ok
+  gradio         5.50.0
+  docx           1.2.0
+  pypdfium2      ok
+warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+  fitz           1.28.2
+  psutil         5.9.5
+  CUDA 12.8 · 2 GPU(s)
+    cuda:0 Tesla T4 · 14.6 GiB · compute 7.5 (fp16)
+    cuda:1 Tesla T4 · 14.6 GiB · compute 7.5 (fp16)
+  Kraken: /root/.cache/arabic_doc_ocr/kraken_venv/bin/kraken · segmentation model: /root/.cache/arabic_doc_ocr/muharaf_seg_best.mlmodel
+  RAM 31.3 GiB (free 28.5)
+  disk (home) free 1054.3 GiB
+  model dots-studio/dots.mocr: cached (5.7 GiB)
+  model Misraj/Baseer__Nakba: cached (7.0 GiB)
+  model khanh99/htr-baseer-nakba-ft: cached (0.6 GiB)
+OK
+
+Done. Web:  bash run_web.sh        CLI:  /kaggle/working/arabic-doc-ocr/.venv/bin/python -m arabic_doc_ocr page <file> --type printed

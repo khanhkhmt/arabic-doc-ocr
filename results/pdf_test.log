@@ -1,0 +1,119 @@
+  [  0%] page 1/2: dots layout
+2026-10-19 05:23:23.432271: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1792387403.456512   38774 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1792387403.464611   38774 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1792387403.485745   38774 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792387403.485780   38774 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792387403.485783   38774 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792387403.485786   38774 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-10-19 05:23:23.491093: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Fetching 22 files:   0%|          | 0/22 [00:00<?, ?it/s]Fetching 22 files: 100%|██████████| 22/22 [00:00<00:00, 225610.48it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.57s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.20it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.06it/s]
+warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+Setting `pad_token_id` to `eos_token_id`:151643 for open-end generation.
+  [ 20%] page 2/2: dots layout
+Setting `pad_token_id` to `eos_token_id`:151643 for open-end generation.
+  [ 40%] page 1/2: reading 26 lines
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:01,  3.59it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:01,  3.53it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:00<00:01,  3.49it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.53it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.57it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:01<00:00,  3.53it/s]Loading checkpoint shards:  88%|████████▊ | 7/8 [00:03<00:00,  1.30it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:04<00:00,  1.14it/s]Loading checkpoint shards: 100%|██████████| 8/8 [00:04<00:00,  1.74it/s]
+Fetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]Fetching 8 files: 100%|██████████| 8/8 [00:00<00:00, 33189.35it/s]
+Fetching 1 files:   0%|          | 0/1 [00:00<?, ?it/s]Fetching 1 files: 100%|██████████| 1/1 [00:00<00:00, 15887.52it/s]
+Fetching 1 files:   0%|          | 0/1 [00:00<?, ?it/s]Fetching 1 files: 100%|██████████| 1/1 [00:00<00:00, 8405.42it/s]
+Fetching 1 files:   0%|          | 0/1 [00:00<?, ?it/s]Fetching 1 files: 100%|██████████| 1/1 [00:00<00:00, 7436.71it/s]
+Fetching 1 files:   0%|          | 0/1 [00:00<?, ?it/s]Fetching 1 files: 100%|██████████| 1/1 [00:00<00:00, 23696.63it/s]
+  [ 40%] page 1/2: ft3 line 1/26
+The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+  [ 41%] page 1/2: ft3 line 2/26
+  [ 41%] page 1/2: ft3 line 3/26
+  [ 42%] page 1/2: ft3 line 4/26
+  [ 42%] page 1/2: ft3 line 5/26
+  [ 43%] page 1/2: ft3 line 6/26
+  [ 43%] page 1/2: ft3 line 7/26
+  [ 44%] page 1/2: ft3 line 8/26
+  [ 45%] page 1/2: ft3 line 9/26
+  [ 45%] page 1/2: ft3 line 10/26
+  [ 46%] page 1/2: ft3 line 11/26
+  [ 46%] page 1/2: ft3 line 12/26
+  [ 47%] page 1/2: ft3 line 13/26
+  [ 48%] page 1/2: ft3 line 14/26
+  [ 48%] page 1/2: ft3 line 15/26
+  [ 49%] page 1/2: ft3 line 16/26
+  [ 49%] page 1/2: ft3 line 17/26
+  [ 50%] page 1/2: ft3 line 18/26
+  [ 50%] page 1/2: ft3 line 19/26
+  [ 51%] page 1/2: ft3 line 20/26
+  [ 52%] page 1/2: ft3 line 21/26
+  [ 52%] page 1/2: ft3 line 22/26
+  [ 53%] page 1/2: ft3 line 23/26
+  [ 53%] page 1/2: ft3 line 24/26
+  [ 54%] page 1/2: ft3 line 25/26
+  [ 54%] page 1/2: ft3 line 26/26
+  [ 55%] page 1/2: ft4 line 1/26
+  [ 56%] page 1/2: ft4 line 2/26
+  [ 56%] page 1/2: ft4 line 3/26
+  [ 57%] page 1/2: ft4 line 4/26
+  [ 57%] page 1/2: ft4 line 5/26
+  [ 58%] page 1/2: ft4 line 6/26
+  [ 58%] page 1/2: ft4 line 7/26
+  [ 59%] page 1/2: ft4 line 8/26
+  [ 60%] page 1/2: ft4 line 9/26
+  [ 60%] page 1/2: ft4 line 10/26
+  [ 61%] page 1/2: ft4 line 11/26
+  [ 61%] page 1/2: ft4 line 12/26
+  [ 62%] page 1/2: ft4 line 13/26
+  [ 62%] page 1/2: ft4 line 14/26
+  [ 63%] page 1/2: ft4 line 15/26
+  [ 64%] page 1/2: ft4 line 16/26
+  [ 64%] page 1/2: ft4 line 17/26
+  [ 65%] page 1/2: ft4 line 18/26
+  [ 65%] page 1/2: ft4 line 19/26
+  [ 66%] page 1/2: ft4 line 20/26
+  [ 67%] page 1/2: ft4 line 21/26
+  [ 67%] page 1/2: ft4 line 22/26
+  [ 68%] page 1/2: ft4 line 23/26
+  [ 68%] page 1/2: ft4 line 24/26
+  [ 69%] page 1/2: ft4 line 25/26
+  [ 69%] page 1/2: ft4 line 26/26
+  [ 70%] page 2/2: reading 20 lines
+  [ 70%] page 2/2: ft3 line 1/20
+  [ 71%] page 2/2: ft3 line 2/20
+  [ 72%] page 2/2: ft3 line 3/20
+  [ 72%] page 2/2: ft3 line 4/20
+  [ 73%] page 2/2: ft3 line 5/20
+  [ 74%] page 2/2: ft3 line 6/20
+  [ 74%] page 2/2: ft3 line 7/20
+  [ 75%] page 2/2: ft3 line 8/20
+  [ 76%] page 2/2: ft3 line 9/20
+  [ 77%] page 2/2: ft3 line 10/20
+  [ 78%] page 2/2: ft3 line 11/20
+  [ 78%] page 2/2: ft3 line 12/20
+  [ 79%] page 2/2: ft3 line 13/20
+  [ 80%] page 2/2: ft3 line 14/20
+  [ 80%] page 2/2: ft3 line 15/20
+  [ 81%] page 2/2: ft3 line 16/20
+  [ 82%] page 2/2: ft3 line 17/20
+  [ 83%] page 2/2: ft3 line 18/20
+  [ 84%] page 2/2: ft3 line 19/20
+  [ 84%] page 2/2: ft3 line 20/20
+  [ 85%] page 2/2: ft4 line 1/20
+  [ 86%] page 2/2: ft4 line 2/20
+  [ 86%] page 2/2: ft4 line 3/20
+  [ 87%] page 2/2: ft4 line 4/20
+  [ 88%] page 2/2: ft4 line 5/20
+  [ 89%] page 2/2: ft4 line 6/20
+  [ 90%] page 2/2: ft4 line 7/20
+  [ 90%] page 2/2: ft4 line 8/20
+  [ 91%] page 2/2: ft4 line 9/20
+  [ 92%] page 2/2: ft4 line 10/20
+  [ 92%] page 2/2: ft4 line 11/20
+  [ 93%] page 2/2: ft4 line 12/20
+  [ 94%] page 2/2: ft4 line 13/20
+  [ 95%] page 2/2: ft4 line 14/20
+  [ 96%] page 2/2: ft4 line 15/20
+  [ 96%] page 2/2: ft4 line 16/20
+  [ 97%] page 2/2: ft4 line 17/20
+  [ 98%] page 2/2: ft4 line 18/20
+  [ 98%] page 2/2: ft4 line 19/20
+  [ 99%] page 2/2: ft4 line 20/20
+results/pdf_test.pdf: 2 page(s), 559 s → /kaggle/working/arabic-doc-ocr/results/pdf_test/pdf_test_all.zip

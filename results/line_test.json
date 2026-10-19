@@ -1,0 +1,16 @@
+[
+ {
+  "image": "results/line_0.png",
+  "ft3": "٦٥٠٠",
+  "ft4": "٦٥٠٠",
+  "agree": 1.0,
+  "words_differ": []
+ },
+ {
+  "image": "results/line_1.png",
+  "ft3": "غيره اسرائيل",
+  "ft4": "غيره اسرائيل",
+  "agree": 1.0,
+  "words_differ": []
+ }
+]

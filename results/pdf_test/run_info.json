@@ -1,0 +1,67 @@
+{
+ "loads": {
+  "dots": 1,
+  "htr": 1
+ },
+ "offload": "none",
+ "dots_device": "cuda:0",
+ "htr_device": "cuda:1",
+ "documents": [
+  {
+   "input": "results/pdf_test.pdf",
+   "type": "printed",
+   "pages": 2,
+   "seconds": 559.4,
+   "per_page": [
+    {
+     "dots_scale": 1.125,
+     "dots_seconds": 101.4,
+     "dots_gpu_peak_gb": {
+      "cuda:0": 10.96
+     },
+     "dots_tokens": 814,
+     "dots_hit_max_tokens": false,
+     "dots_stopped_loop": false,
+     "dots_layout": "ok",
+     "segmentation": [
+      "kraken",
+      "projection"
+     ],
+     "segmentation_seconds": 70.1,
+     "hebrew_blocks": 0,
+     "notes": [],
+     "htr_seconds": 92.8,
+     "htr_gpu_peak_gb": {
+      "cuda:1": 7.65
+     },
+     "lines": 26,
+     "page_type": "printed"
+    },
+    {
+     "dots_scale": 1.6,
+     "dots_seconds": 122.0,
+     "dots_gpu_peak_gb": {
+      "cuda:0": 12.21
+     },
+     "dots_tokens": 677,
+     "dots_hit_max_tokens": false,
+     "dots_stopped_loop": false,
+     "dots_layout": "ok",
+     "segmentation": [
+      "kraken",
+      "projection"
+     ],
+     "segmentation_seconds": 80.3,
+     "hebrew_blocks": 0,
+     "notes": [],
+     "htr_seconds": 64.1,
+     "htr_gpu_peak_gb": {
+      "cuda:1": 7.65
+     },
+     "lines": 20,
+     "page_type": "printed"
+    }
+   ]
+  }
+ ]
+}

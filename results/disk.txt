@@ -1,0 +1,5 @@
+venv_gb: 0.34
+kraken_venv_gb: 1.29
+model_gb dots-studio/dots.mocr: 5.67
+model_gb Misraj/Baseer__Nakba: 7.01
+model_gb khanh99/htr-baseer-nakba-ft: 0.61

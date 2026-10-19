@@ -1,0 +1,60 @@
+  [  0%] page 1/1: dots layout
+2026-10-19 05:19:43.192957: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1792387183.233312   37017 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1792387183.246652   37017 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1792387183.294185   37017 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792387183.294226   37017 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792387183.294231   37017 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1792387183.294235   37017 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-10-19 05:19:43.308541: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Fetching 22 files:   0%|          | 0/22 [00:00<?, ?it/s]Fetching 22 files: 100%|██████████| 22/22 [00:00<00:00, 42799.02it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:19<00:19, 19.87s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:22<00:00,  9.49s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:22<00:00, 11.04s/it]
+warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.
+Setting `pad_token_id` to `eos_token_id`:151643 for open-end generation.
+  [ 40%] page 1/1: reading 24 lines
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:00<00:02,  3.20it/s]Loading checkpoint shards:  25%|██▌       | 2/8 [00:00<00:02,  2.83it/s]Loading checkpoint shards:  38%|███▊      | 3/8 [00:01<00:01,  2.99it/s]Loading checkpoint shards:  50%|█████     | 4/8 [00:01<00:01,  3.08it/s]Loading checkpoint shards:  62%|██████▎   | 5/8 [00:01<00:00,  3.05it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.96it/s]Loading checkpoint shards:  75%|███████▌  | 6/8 [00:02<00:00,  2.07it/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/kaggle/working/arabic-doc-ocr/arabic_doc_ocr/__main__.py", line 5, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/arabic_doc_ocr/cli.py", line 203, in main
+    return {"check": cmd_check, "download": cmd_download, "page": cmd_page, "line": cmd_line, "web": cmd_web}[a.cmd](a)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/arabic_doc_ocr/cli.py", line 135, in cmd_page
+    results = pipe.process_document(pages, page_type,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/arabic_doc_ocr/pipeline.py", line 351, in process_document
+    self.read(res, (lambda p, msg, i=i: say(0.4 + 0.6 * (i + p) / n, f"page {i + 1}/{n}: {msg}"))
+  File "/kaggle/working/arabic-doc-ocr/arabic_doc_ocr/pipeline.py", line 287, in read
+    htr = self.models.htr()
+          ^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/arabic_doc_ocr/pipeline.py", line 151, in htr
+    self._htr = HTRReader(self.htr_device).load()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/arabic_doc_ocr/htr_model.py", line 67, in load
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(self.base, config=cfg, **kw).eval()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 288, in _wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 5176, in from_pretrained
+    ) = cls._load_pretrained_model(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 5639, in _load_pretrained_model
+    _error_msgs, disk_offload_index, cpu_offload_index = load_shard_file(args)
+                                                         ^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 946, in load_shard_file
+    disk_offload_index, cpu_offload_index = _load_state_dict_into_meta_model(
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/kaggle/working/arabic-doc-ocr/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 813, in _load_state_dict_into_meta_model
+    param = param[...]
+            ~~~~~^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 14.56 GiB of which 18.81 MiB is free. Including non-PyTorch memory, this process has 14.54 GiB memory in use. Of the allocated memory 14.09 GiB is allocated by PyTorch, and 325.77 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+returncode 1 · 235.2 s · GPU peak (nvidia-smi) {0: 14.54, 1: 0.0} GB · RAM peak 6.19 GB → /kaggle/working/arabic-doc-ocr/results/one_gpu_both/measure.json
