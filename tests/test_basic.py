@@ -207,3 +207,75 @@ def test_projection_on_real_scan_shapes():
         d.line([0, y, 1199, y], fill=(30, 30, 120), width=2)
     assert len(projection_lines(im)) == 3
     assert np.asarray(im).shape == (900, 1200, 3)
+
+
+# --- LLM correction (CPU, fake LLM — the real one runs in its own venv, scripts/check_llm.py) ----------------------
+
+class FakeLLM:
+    """Prefers any sentence containing "ثالثة"; chat() returns a fixed rewrite."""
+
+    def __init__(self, reply=""):
+        self.reply = reply
+
+    def logprob(self, text):
+        return 1.0 if "ثالثة" in text else 0.0
+
+    def chat(self, user):
+        return self.reply
+
+
+def test_llm_chon_picks_the_more_probable_reading():
+    from arabic_doc_ocr.llm_fix import fix_chon
+
+    t, ch = fix_chon(FakeLLM(), "كلمة اولى ثانية", "كلمة اولى ثالثة")
+    assert t == "كلمة اولى ثالثة" and ch[0]["old"] == "ثانية" and ch[0]["new"] == "ثالثة"
+    t, ch = fix_chon(FakeLLM(), "رقم 12 ثانية", "رقم 13 ثالثة")  # spans with digits are never touched
+    assert t == "رقم 12 ثانية" and ch == []
+
+
+def test_llm_sua_accepts_only_small_word_edits():
+    from arabic_doc_ocr.llm_fix import fix_sua
+
+    # 1-letter fixes accepted; a rewritten word (too many letters) and a changed number rejected
+    t, ch = fix_sua(FakeLLM("الفريق الأول اشترى الارض سنة 1973"), "الفريق الاول باع الارص سنة 1972", "")
+    assert t == "الفريق الأول باع الارض سنة 1972"
+    assert sorted(c["new"] for c in ch if not c.get("rejected")) == ["الأول", "الارض"]
+    assert sum(1 for c in ch if c.get("rejected")) == 2
+
+
+def test_llm_not_installed_reason(monkeypatch, tmp_path):
+    from arabic_doc_ocr import llm
+
+    monkeypatch.setattr(config, "LLM_VENV", tmp_path / "nothing")
+    assert llm.llm_python() is None and "install_llm.sh" in llm.why_not()
+
+
+def test_llm_apply_and_outputs(tmp_path, monkeypatch):
+    from docx import Document
+    from docx.enum.text import WD_COLOR_INDEX
+
+    from arabic_doc_ocr import llm
+
+    monkeypatch.setattr("arabic_doc_ocr.pipeline.kraken_page", lambda img: None)
+    res = _pipe().process_document([_fake_page()], config.HANDWRITTEN)
+    us = llm.units(res)
+    assert us and {u["key"] for u in us} == {f"0:{bi}" for bi, (s, _) in res[0].sources.items()
+                                              if s in ("dots", "ft3") and res[0].texts["main"][bi].strip()}
+    r = {"texts": {u["key"]: u["main"].replace("ثانية", "ثالثة") for u in us},
+         "changes": {u["key"]: [{"old": "ثانية", "new": "ثالثة", "step": "chon"},
+                                {"old": "اولى", "new": "اول", "step": "sua", "rejected": True}] for u in us}}
+    assert llm.apply(res, r) == len(us)  # rejected proposals are not counted
+    res[0].info["llm"] = {"ok": True, "model": "fake", "method": "chon_sua"}
+    bi = int(next(u for u in us if "ثانية" in u["main"])["key"].split(":")[1])
+    assert "ثالثة" in res[0].texts["main"][bi] and "ثانية" in res[0].texts["ocr"][bi]
+    w = write_all(tmp_path, "doc", res)
+    assert "doc_ocr.txt" in {p.name for p in w["files"]}
+    assert "ثانية" in (tmp_path / "doc_ocr.txt").read_text(encoding="utf-8")
+    assert "ثانية" not in (tmp_path / "doc_main.txt").read_text(encoding="utf-8")
+    js = json.loads((tmp_path / "doc.json").read_text(encoding="utf-8"))
+    b = js["pages"][0]["blocks"][bi]
+    assert "ثانية" in b["text_ocr"] and b["llm_changes"][0]["new"] == "ثالثة"
+    assert "After the LLM correction" in (tmp_path / "doc_review.html").read_text(encoding="utf-8")
+    doc = Document(tmp_path / "doc.docx")
+    green = [x.text for p in doc.paragraphs for x in p.runs if x.font.highlight_color == WD_COLOR_INDEX.BRIGHT_GREEN]
+    assert "ثالثة" in green and "ثانية" not in green

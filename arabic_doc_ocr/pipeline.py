@@ -206,6 +206,7 @@ class PageResult:
     sources: dict[int, tuple[str, float | None]] = field(default_factory=dict)  # block → (main reader, dots≈ft3)
     texts: dict[str, dict[int, str]] = field(default_factory=dict)  # main / check / ft3 / ft4 / dots → per block
     info: dict = field(default_factory=dict)
+    llm_changes: dict[int, list[dict]] = field(default_factory=dict)  # block → words the LLM changed (optional step)
 
     def page_text(self, kind: str = "main") -> str:
         return "\n\n".join(t for _, t in sorted(self.texts.get(kind, {}).items()) if t.strip())

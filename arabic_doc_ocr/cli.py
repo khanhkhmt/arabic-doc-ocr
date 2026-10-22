@@ -3,6 +3,7 @@
     python -m arabic_doc_ocr check                                   # GPUs, library versions, Kraken, model cache
     python -m arabic_doc_ocr download                                # fetch all models into the cache (~15 GB)
     python -m arabic_doc_ocr page scan.pdf photo.jpg --type printed --out results/
+    python -m arabic_doc_ocr page scan.pdf --type printed --llm      # + LLM correction (bash install_llm.sh)
     python -m arabic_doc_ocr line line1.png line2.png [--json lines.json]
     python -m arabic_doc_ocr web [--host 127.0.0.1] [--port 7862]
 
@@ -71,6 +72,10 @@ def cmd_check(a) -> int:
                   "dots.mocr / Qwen2.5-VL generation)")
     except ImportError:
         ok = False
+    from . import llm
+
+    lp = llm.llm_python()
+    print(f"  LLM correction (optional): {'venv ' + str(lp) if lp else 'not installed (bash install_llm.sh)'}")
     exe, model = kraken_paths()
     print(f"  Kraken: {exe or 'MISSING'} · segmentation model: {model or 'MISSING'}")
     if not exe or not model:
@@ -123,6 +128,12 @@ def cmd_page(a) -> int:
     bad = [t for t in types if t not in (config.HANDWRITTEN, config.PRINTED)]
     if bad or len(types) != len(a.inputs):
         sys.exit(f"--type: handwritten or printed, or one per input ({len(a.inputs)}); got {a.type!r}")
+    if a.llm:
+        from . import llm
+
+        reason = llm.why_not()
+        if reason:
+            sys.exit(f"--llm: {reason}")
     pipe = Pipeline(**_pipeline_kwargs(a))
     out = Path(a.out)
     summary = []
@@ -135,6 +146,11 @@ def cmd_page(a) -> int:
         results = pipe.process_document(pages, page_type,
                                         (lambda p, msg: print(f"  [{100 * p:3.0f}%] {msg}", file=sys.stderr))
                                         if not a.quiet else None)
+        if a.llm:
+            info = llm.correct(results, pipe.models, (lambda p, msg: print(f"  [{100 * p:3.0f}%] {msg}",
+                                                                           file=sys.stderr)) if not a.quiet else None)
+            print(f"  LLM: {info['changed_words']} word change(s)" if info.get("ok")
+                  else f"  ⚠ LLM NOT applied: {info.get('error')}", file=sys.stderr)
         name = path.stem if len(a.inputs) == len(set(Path(x).stem for x in a.inputs)) else \
             f"{path.parent.name}_{path.stem}"
         w = write_all(out, name, results, nums)
@@ -189,6 +205,8 @@ def main(argv=None) -> int:
     p.add_argument("--pages", default="", help="PDF pages, e.g. 1-3,5 (default: all)")
     p.add_argument("--out", default="ocr_out")
     p.add_argument("--quiet", action="store_true")
+    p.add_argument("--llm", action="store_true", help="LLM correction of the main text (needs bash install_llm.sh "
+                                                      "and ≥ 22 GB GPU memory in total, e.g. 2 × T4)")
     _device_args(p)
     p = sub.add_parser("line", help="read single text-line images with ft3 + ft4")
     p.add_argument("images", nargs="+")

@@ -1,8 +1,11 @@
 """Output files of a document:
 
     <name>_all.zip          everything below
-    <name>.docx             main text, words the cross-check reads differently highlighted yellow + Word comment
-    <name>_main.txt         main text (handwritten blocks: ft3, printed blocks: dots, Hebrew blocks: dots)
+    <name>.docx             main text, words the cross-check reads differently highlighted yellow + Word comment;
+                            with the LLM step: words the LLM changed highlighted green + comment "OCR read: …"
+    <name>_main.txt         main text (handwritten blocks: ft3, printed blocks: dots, Hebrew blocks: dots; after the
+                            LLM step if it ran)
+    <name>_ocr.txt          only with the LLM step: the main text BEFORE the LLM correction
     <name>_ft3.txt / _ft4.txt   each line reader on its own
     <name>_review.html      line-by-line review table (line image | ft3 with highlights | ft4)
     <name>.json             blocks / lines with boxes and every reading
@@ -32,7 +35,7 @@ body{font-family:sans-serif;margin:16px}
 .htr th{background:#f3f3f3} .htr summary{cursor:pointer;color:#555} .htr img{max-width:100%;border:1px solid #eee}
 .htr .meta{color:#666;font-size:12px} .htr mark{background:#ffe14d;padding:0 1px} .htr .ok{color:#1a7f37}
 .htr .diff{color:#c2410c} .htr .sum{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0} .htr .sum b{font-size:20px}
-.htr tr.block td{background:#eef4ff}
+.htr tr.block td{background:#eef4ff} .htr mark.llm{background:#86efac}
 """
 
 
@@ -47,6 +50,17 @@ def _b64(im: Image.Image, h: int = 56) -> str:
 def marked_html(main: str, check: str, check_name: str = config.CHECK) -> str:
     return " ".join(f"<mark title='{check_name}: {html.escape(alt)}'>{html.escape(w)}</mark>" if s else html.escape(w)
                     for w, s, alt in compare_words(main, check))
+
+
+def _llm_rows(res: PageResult, bi: int) -> list[str]:
+    """Review-table row with the block text after the LLM step (green = changed, hover = OCR reading)."""
+    if not res.llm_changes.get(bi) or "ocr" not in res.texts:
+        return []
+    main, orig = res.texts["main"].get(bi, ""), res.texts["ocr"].get(bi, "")
+    marked = " ".join(f"<mark class=llm title='OCR: {html.escape(alt)}'>{html.escape(w)}</mark>" if s else html.escape(w)
+                      for w, s, alt in compare_words(main, orig))
+    return [f"<tr><td colspan=3><span class=meta>After the LLM correction — {len(res.llm_changes[bi])} change(s), "
+            f"green = changed (hover: what the OCR read)</span><div class=ar>{marked}</div></td></tr>"]
 
 
 # --- page image with boxes ------------------------------------------------------------------------------------------
@@ -109,17 +123,25 @@ def review_html(res: PageResult, page_no: int, n_pages: int) -> tuple[str, dict]
             if idx:
                 rows.append(f"<tr><td colspan=3><details><summary>{len(idx)} ft3 / ft4 lines of this block</summary>"
                             f"<table>{''.join(line_rows)}</table></details></td></tr>")
+            rows += _llm_rows(res, bi)
             continue
         dots_txt = (f"<details><summary>dots reading of this block (printed-text reader)</summary><div class=ar>"
                     f"{html.escape(b.get('text') or '')}</div></details>") if b.get("text") else ""
         rows.append(f"<tr class=block><td colspan=3>Block {bi + 1} · {cat} · {len(idx)} lines → ft3{ag}"
                     f"{' · FALLBACK (dots found no block)' if b.get('fallback') else ''}{dots_txt}</td></tr>")
         rows += line_rows
+        rows += _llm_rows(res, bi)
     count = {x: sum(v[0] == x for v in res.sources.values()) for x in (config.MAIN, "dots", "hebrew")}
     stats = {"lines": len(lines), "lines_differ": lines_differ, "words": words, "words_flagged": flagged,
              "blocks_by_reader": count}
     notes = "".join(f"<p class=meta>⚠ {html.escape(x)}</p>" for x in res.info.get("notes", []))
     i = res.info
+    li = i.get("llm") or {}
+    if li.get("ok") and li.get("model"):
+        n_llm = sum(len(v) for v in res.llm_changes.values())
+        notes += (f"<p class=meta>LLM correction ({html.escape(str(li['model']))}, {html.escape(str(li['method']))}): "
+                  f"{n_llm} word change(s) on this page — rows \"After the LLM correction\" (green). The line table "
+                  "shows the OCR readings before the correction.</p>")
     summary = (f"<div class=sum><span><b>{len(lines)}</b> lines</span><span><b>{lines_differ}</b> lines ft3 ≠ ft4</span>"
                f"<span><b>{100 * flagged / max(1, words):.0f}%</b> words highlighted ({flagged}/{words})</span>"
                f"<span>blocks: <b>{count[config.MAIN]}</b> ft3 · <b>{count['dots']}</b> dots · "
@@ -145,23 +167,39 @@ def _rtl_run(run) -> None:
         rpr.append(OxmlElement("w:rtl"))
 
 
-def _marked_paragraph(doc, main: str, check: str, check_name: str) -> tuple[int, int]:
+def _marked_paragraph(doc, main: str, check: str, check_name: str, orig: str | None = None) -> tuple[int, int, int]:
     """One RTL paragraph of the main reading; differing words yellow, each differing span gets one Word comment
-    "<check_name> reads: …"."""
+    "<check_name> reads: …". orig = the OCR text before the LLM step: words the LLM changed are green, with one
+    comment "LLM changed — OCR read: …" per changed span (green wins over yellow). → (words, yellow, green)."""
     from docx.enum.text import WD_COLOR_INDEX
 
     p = doc.add_paragraph()
     _set_bidi(p)
     words = compare_words(main, check)
-    i = n_flag = 0
+    llm = compare_words(main, orig) if orig is not None else [(w, False, "") for w, _, _ in words]
+    i = n_flag = n_llm = 0
     while i < len(words):
         w, sus, alt = words[i]
+        if llm[i][1]:
+            runs, j, old = [], i, llm[i][2]
+            while j < len(words) and llm[j][1] and llm[j][2] == old:
+                if j:
+                    _rtl_run(p.add_run(" "))
+                r = p.add_run(words[j][0])
+                r.font.highlight_color = WD_COLOR_INDEX.BRIGHT_GREEN
+                _rtl_run(r)
+                runs.append(r)
+                j += 1
+            n_llm += len(runs)
+            doc.add_comment(runs, text=f"LLM changed — OCR read: {old}", author="LLM", initials="LLM")
+            i = j
+            continue
         if not sus:
             _rtl_run(p.add_run(("" if i == 0 else " ") + w))
             i += 1
             continue
         runs, j = [], i
-        while j < len(words) and words[j][1] and words[j][2] == alt:
+        while j < len(words) and words[j][1] and words[j][2] == alt and not llm[j][1]:
             if j:
                 _rtl_run(p.add_run(" "))
             r = p.add_run(words[j][0])
@@ -172,15 +210,20 @@ def _marked_paragraph(doc, main: str, check: str, check_name: str) -> tuple[int,
         n_flag += len(runs)
         doc.add_comment(runs, text=f"{check_name} reads: {alt}", author="OCR", initials="OCR")
         i = j
-    return len(words), n_flag
+    return len(words), n_flag, n_llm
 
 
-def _pairs(main: str, check: str) -> list[tuple[str, str]]:
-    """Same number of lines (two line readers on the same line images) → compare line by line; otherwise (dots
-    reads the whole block) compare the whole block once."""
+def _pairs(main: str, check: str, orig: str | None = None) -> list[tuple[str, str, str | None]]:
+    """Same number of lines (two line readers on the same line images; the OCR text before the LLM step too, if
+    given) → compare line by line; otherwise (dots reads the whole block) compare the whole block once."""
     a = [x for x in main.split("\n") if x.strip()]
     b = [x for x in check.split("\n") if x.strip()]
-    return list(zip(a, b)) if len(a) == len(b) else [(" ".join(a), " ".join(b))]
+    if orig is None:
+        return [(x, y, None) for x, y in zip(a, b)] if len(a) == len(b) else [(" ".join(a), " ".join(b), None)]
+    c = [x for x in orig.split("\n") if x.strip()]
+    if len(a) == len(b) == len(c):
+        return list(zip(a, b, c))
+    return [(" ".join(a), " ".join(b), " ".join(c))]
 
 
 def write_docx(path: Path, results: list[PageResult], title: str) -> dict:
@@ -196,13 +239,16 @@ def write_docx(path: Path, results: list[PageResult], title: str) -> dict:
         el = OxmlElement("w:szCs")
         el.set(qn("w:val"), "28")
         rpr.append(el)
-    stats = {"blocks": 0, "words": 0, "words_flagged": 0}
+    stats = {"blocks": 0, "words": 0, "words_flagged": 0, "words_llm": 0}
     for k, res in enumerate(results):
         if k:
             doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+        llm_ok = bool(res.info.get("llm", {}).get("ok")) and "ocr" in res.texts
         note = doc.add_paragraph().add_run(
             f"Page {k + 1} · {res.info.get('page_type')} · YELLOW = the cross-check reads that word differently "
-            "(see the comment) — needs a human check. Hebrew blocks: dots reading, not cross-checked.")
+            "(see the comment) — needs a human check. Hebrew blocks: dots reading, not cross-checked."
+            + (" GREEN = changed by the LLM correction (the comment shows what the OCR read) — check it too."
+               if llm_ok else ""))
         note.font.size = Pt(9)
         img = res.image
         for bi, b in enumerate(res.blocks):
@@ -210,13 +256,15 @@ def write_docx(path: Path, results: list[PageResult], title: str) -> dict:
             main, check = res.texts["main"].get(bi, ""), res.texts["check"].get(bi, "")
             if cat in config.TEXT_CATS and main.strip():
                 src = res.sources[bi][0]
-                for m, c in _pairs(main, check):
+                orig = res.texts["ocr"].get(bi) if llm_ok and src != "hebrew" else None
+                for m, c, o in _pairs(main, check, orig):
                     if src == "hebrew":
                         _set_bidi(doc.add_paragraph(m))
                         continue
-                    n, f = _marked_paragraph(doc, m, c, "ft3" if src == "dots" else config.CHECK)
+                    n, f, g = _marked_paragraph(doc, m, c, "ft3" if src == "dots" else config.CHECK, o)
                     stats["words"] += n
                     stats["words_flagged"] += f
+                    stats["words_llm"] += g
                 stats["blocks"] += 1
             elif cat == "Table" and b.get("text"):
                 _add_markdown(doc, b["text"])
@@ -241,6 +289,8 @@ def page_json(res: PageResult, page_no: int, stats: dict) -> dict:
             "blocks": [{"n": bi + 1, "category": b.get("category"), "bbox": b.get("bbox"),
                         "reader": res.sources.get(bi, (None,))[0], "dots_ft3_agreement": res.sources.get(bi, (0, None))[1],
                         "text": res.texts["main"].get(bi), "dots": b.get("text"),
+                        **({"text_ocr": res.texts["ocr"].get(bi), "llm_changes": res.llm_changes.get(bi, [])}
+                           if "ocr" in res.texts else {}),
                         "lines": [{"bbox": list(L.box), "ft3": ft3[n], "ft4": ft4[n]}
                                   for n, L in enumerate(res.lines) if L.block == bi]}
                        for bi, b in enumerate(res.blocks)]}
@@ -255,7 +305,7 @@ def write_all(out_dir: Path, name: str, results: list[PageResult], page_numbers:
     nums = page_numbers or list(range(1, len(results) + 1))
     n_pages = max(nums) if nums else 0
     htmls, data, boxes = [], [], []
-    txt = {k: [] for k in ("main", "ft3", "ft4")}
+    txt = {k: [] for k in ("main", "ft3", "ft4") + (("ocr",) if any("ocr" in r.texts for r in results) else ())}
     for no, res in zip(nums, results):
         h, st = review_html(res, no, n_pages)
         htmls.append(h)

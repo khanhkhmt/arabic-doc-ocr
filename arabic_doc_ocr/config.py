@@ -11,6 +11,8 @@ HOME = Path(os.environ.get("ARABIC_OCR_HOME", Path.home() / ".cache" / "arabic_d
 KRAKEN_VENV = Path(os.environ.get("KRAKEN_VENV", HOME / "kraken_venv"))
 KRAKEN_SEG_MODEL = Path(os.environ.get("KRAKEN_SEG_MODEL", HOME / "muharaf_seg_best.mlmodel"))
 MUHARAF_SEG_URL = "https://zenodo.org/records/14295555/files/muharaf_seg_best.mlmodel?download=1"  # CC BY 4.0
+# optional LLM correction (install_llm.sh): own venv, because the LLM needs transformers 5.x
+LLM_VENV = Path(os.environ.get("LLM_VENV", HOME / "llm_venv"))
 
 # --- models ---------------------------------------------------------------------------------------------------------
 DOTS_MODEL = "dots-studio/dots.mocr"          # layout + printed text
@@ -42,6 +44,8 @@ HTR_MIN_PIXELS, HTR_MAX_PIXELS = 28 * 28, 1280 * 28 * 28
 # swaps them: the idle model goes to CPU RAM if the machine has at least OFFLOAD_CPU_MIN_RAM_GB, else it is reloaded
 ONE_GPU_BOTH_MODELS_GB = 22
 OFFLOAD_CPU_MIN_RAM_GB = 24
+# LLM correction: Qwen3.5-9B in fp16 (~18 GB) spread over all GPUs → needs this much GPU memory in total
+LLM_MIN_GPU_GB = 22
 
 # --- layout categories ----------------------------------------------------------------------------------------------
 TEXT_CATS = {"Text", "Title", "Section-header", "List-item", "Caption", "Footnote", "Page-header", "Page-footer"}

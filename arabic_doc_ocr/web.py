@@ -2,8 +2,9 @@
 
     python -m arabic_doc_ocr web [--host 127.0.0.1] [--port 7862] [--dots-device cuda:0] [--htr-device cuda:1]
 
-Tab "Document": image or PDF → dots.mocr layout → Kraken lines → ft3 + ft4 read every line → review table,
-DOCX / TXT / HTML / JSON / page images to download.  Tab "One line": one line image → ft3 / ft4.
+Tab "Document": image or PDF → dots.mocr layout → Kraken lines → ft3 + ft4 read every line → (optional) LLM
+correction → review table, DOCX / TXT / HTML / JSON / page images to download.  Tab "One line": one line image →
+ft3 / ft4.
 One request at a time (the GPU models are shared).
 """
 
@@ -35,7 +36,7 @@ def pipeline() -> Pipeline:
     return STATE["pipeline"]
 
 
-def run_document(file, pages_spec, type_label, progress=gr.Progress()):
+def run_document(file, pages_spec, type_label, use_llm=False, progress=gr.Progress()):
     if not file:
         return None, "<p>No file.</p>", "", None
     path = Path(file if isinstance(file, str) else file.name)
@@ -47,9 +48,17 @@ def run_document(file, pages_spec, type_label, progress=gr.Progress()):
     nums = nums[:len(pages)]
     t0 = time.time()
     results = pipeline().process_document(pages, TYPES[type_label], lambda p, msg: progress(p, desc=msg))
+    li = ""
+    if use_llm:
+        from . import llm
+
+        t1 = time.time()
+        info = llm.correct(results, pipeline().models, lambda p, msg: progress(p, desc=msg))
+        li = (f" · LLM: {info['changed_words']} word change(s), {time.time() - t1:.0f} s" if info.get("ok")
+              else f" · LLM NOT applied: {html.escape(str(info.get('error')))}")
     out = Path(tempfile.mkdtemp(prefix="arabic_ocr_"))
     w = write_all(out, path.stem, results, nums)
-    head = f"<p class=meta>{len(pages)} page(s) · {time.time() - t0:.0f} s</p>"
+    head = f"<p class=meta>{len(pages)} page(s) · {time.time() - t0:.0f} s{li}</p>"
     return (draw_boxes(results[0]), f"<div class=htr>{head}</div>{w['html']}", w["main"],
             [str(p) for p in w["files"]])
 
@@ -70,7 +79,10 @@ def run_line(image):
 
 
 def build():
+    from . import llm
+
     gr6 = int(gr.__version__.split(".")[0]) >= 6
+    llm_reason = llm.why_not()
     with gr.Blocks(title="Arabic document OCR", **({} if gr6 else {"css": CSS})) as demo:
         gr.Markdown("## Arabic document OCR — printed and handwritten\n"
                     "dots.mocr finds the blocks and reads printed text → Kraken splits lines → **ft3** reads every "
@@ -82,6 +94,12 @@ def build():
                     f = gr.File(label="Image or PDF", file_types=["image", ".pdf"], type="filepath")
                     pages = gr.Textbox(label="PDF pages (e.g. 1-3,5; empty = all)", value="")
                     kind = gr.Radio(list(TYPES), value=next(iter(TYPES)), label="Text on the page")
+                    use_llm = gr.Checkbox(
+                        value=False, interactive=llm_reason is None,
+                        label="LLM correction (Qwen3.5-9B) — slower: +1–2 min to load, ~1 min per page",
+                        info=(llm_reason or "fixes OCR letter mistakes; changed words are GREEN in the DOCX and the "
+                              "review table. Measured on 4 sample pages: +1…3 % correct characters, ~1 wrong change "
+                              "for 7 good ones — check green words too."))
                     go = gr.Button("Read", variant="primary")
                 with gr.Column(scale=2):
                     vis = gr.Image(label="Blocks (blue; purple = Hebrew) · lines: green = ft3/ft4 agree, orange = differ",
@@ -93,7 +111,7 @@ def build():
             with gr.Accordion("Main text", open=False):
                 txt = gr.Textbox(lines=18, rtl=True)
             out = gr.HTML()
-            go.click(run_document, [f, pages, kind], [vis, out, txt, files])
+            go.click(run_document, [f, pages, kind, use_llm], [vis, out, txt, files])
         with gr.Tab("One line"):
             li = gr.Image(label="Image of ONE text line", type="pil")
             lb = gr.Button("Read", variant="primary")

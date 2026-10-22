@@ -80,6 +80,27 @@ write_all("out/", "scan", results)
 print(results[0].page_text("main"))
 ```
 
+## Optional: LLM correction
+
+After the OCR, an LLM (**Qwen3.5-9B**, Apache 2.0) can fix letter-level OCR mistakes. Off by default.
+
+```bash
+bash install_llm.sh                          # own venv (transformers 5.15.1) + model (~18 GB); after install.sh
+.venv/bin/python scripts/check_llm.py        # optional: re-run the measured check on the 4 sample pages
+# web: tick "LLM correction"   ·   CLI: add --llm
+.venv/bin/python -m arabic_doc_ocr page scan.pdf --type printed --llm --out results/
+```
+
+- Method (fixed, measured on the 4 sample pages, 2026-10-19): where the two readings of a block differ, the LLM keeps
+  the more probable one; then it proposes corrections, and only 1-word ↔ 1-word changes of ≤ 2 letters (≤ 40 % of
+  the word, no digits) are accepted. It never adds, drops or reorders words and never changes numbers.
+- Measured: printed pages +1.1…+3.0 % correct characters (+8…+13 % correct words), handwritten page +3.0 % (+5.3 %
+  words); 89 words fixed, 12 broken. Only 4 pages — a signal, not a guarantee.
+- Changed words are **green** in the DOCX (comment = what the OCR read) and in the review table; `_ocr.txt` and the
+  JSON (`text_ocr`, `llm_changes`) keep the text before the correction. Check green words too.
+- Needs ≥ 22 GB GPU memory in total (2 × T4 works, one T4 does not). The OCR models are freed while the LLM runs and
+  reloaded for the next document: +1–2 min to load the LLM, ~1 min per page.
+
 ## Output files
 
 | file | content |
@@ -87,6 +108,7 @@ print(results[0].page_text("main"))
 | `<name>_all.zip` | everything below |
 | `<name>.docx` | main text in reading order; words the cross-check reads differently in **yellow** with a Word comment; stamps / signatures as pictures; one page break per page |
 | `<name>_main.txt` | main text; `_ft3.txt`, `_ft4.txt`: each line reader alone |
+| `<name>_ocr.txt` | only with the LLM step: main text before the correction (green words in the DOCX = changed) |
 | `<name>_review.html` | line by line: line image, ft3 with highlights, ft4 (open in a browser) |
 | `<name>.json` | blocks and lines with boxes (pixels of the prepared page) and every reading, timings, notes |
 | `<name>_pN_boxes.jpg` | page with dots blocks (blue, Hebrew purple) and lines (green = both readers agree, orange = differ) |
@@ -104,9 +126,11 @@ print(results[0].page_text("main"))
 
 ```
 arabic_doc_ocr/   pipeline.py (stages) · dots_model.py · htr_model.py · lines.py · text.py · export.py ·
-                  docx_utils.py · web.py · cli.py · config.py (all tunable values) · _vendor/dots_ocr (unchanged)
+                  docx_utils.py · web.py · cli.py · config.py (all tunable values) · _vendor/dots_ocr (unchanged) ·
+                  llm.py + llm_fix.py (optional LLM correction, own venv: install_llm.sh)
 examples/         4 sample pages with reference text (label.json)
-scripts/          run_all.sh (acceptance run) · evaluate.py · measure.py · make_report.py · push_results.sh
+scripts/          run_all.sh (acceptance run) · evaluate.py · measure.py · make_report.py · push_results.sh ·
+                  check_llm.py (LLM step vs the measured run)
 docs/             HUONG_DAN_CHAY.md (run guide) · SYSTEM_REQUIREMENTS.md · RESULTS.md (generated)
 tests/            CPU tests with fake models: python -m pytest -q tests
 ```
