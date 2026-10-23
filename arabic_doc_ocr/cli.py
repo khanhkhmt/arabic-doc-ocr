@@ -28,10 +28,14 @@ def _device_args(ap: argparse.ArgumentParser) -> None:
     ap.add_argument("--offload", default="auto", choices=["auto", "none", "cpu", "unload"],
                     help="one shared GPU: keep both models (none), move the idle one to CPU RAM (cpu) or free and "
                          "reload it (unload); auto decides from GPU memory and RAM")
+    ap.add_argument("--line-pad", type=int, default=config.LINE_PAD_PCT,
+                    help=f"make Kraken line images taller by this %% of the line thickness (default "
+                         f"{config.LINE_PAD_PCT}; 0 = the line crop of the 2026-10-19 results)")
 
 
 def _pipeline_kwargs(a) -> dict:
-    return {"dots_device": a.dots_device, "htr_device": a.htr_device, "offload": a.offload}
+    return {"dots_device": a.dots_device, "htr_device": a.htr_device, "offload": a.offload,
+            "line_pad_pct": a.line_pad}
 
 
 def cmd_check(a) -> int:

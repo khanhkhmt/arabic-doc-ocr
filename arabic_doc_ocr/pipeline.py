@@ -215,8 +215,10 @@ class PageResult:
 # --- pipeline -------------------------------------------------------------------------------------------------------
 
 class Pipeline:
-    def __init__(self, dots_device: str | None = None, htr_device: str | None = None, offload: str = "auto"):
+    def __init__(self, dots_device: str | None = None, htr_device: str | None = None, offload: str = "auto",
+                 line_pad_pct: int = config.LINE_PAD_PCT):
         self.models = Models(dots_device, htr_device, offload)
+        self.line_pad_pct = line_pad_pct  # 0 = line crop of the 2026-10-19 results
 
     # stage 1: layout + lines
     def layout(self, page: Image.Image) -> PageResult:
@@ -270,7 +272,8 @@ class Pipeline:
                 continue
             if by_block.get(bi):
                 methods.add("kraken")
-                lines += [Line(bi, L["box"], crop_poly(img, L), L.get("poly")) for L in by_block[bi]]
+                lines += [Line(bi, L["box"], crop_poly(img, L, noi=self.line_pad_pct), L.get("poly"))
+                          for L in by_block[bi]]
                 continue
             methods.add("projection")
             for lx0, ly0, lx1, ly1 in projection_lines(img.crop((x0, y0, x1, y1))):
@@ -280,6 +283,7 @@ class Pipeline:
                 "dots_tokens": r.get("new_tokens"), "dots_hit_max_tokens": r.get("hit_max_tokens"),
                 "dots_stopped_loop": r.get("stopped_loop"), "dots_layout": r.get("layout"),
                 "segmentation": sorted(methods), "segmentation_seconds": round(time.time() - t1, 1),
+                "line_pad_pct": self.line_pad_pct,
                 "hebrew_blocks": sum(bool(b.get("hebrew")) for b in blocks), "notes": notes}
         return PageResult(img, blocks, lines, info=info)
 

@@ -7,6 +7,7 @@ Output is a **draft for a person to check**: every word where two independent re
 ```
 page ─► dots.mocr: layout blocks + printed text (page enlarged to 2400 px)
      ─► Kraken + Muharaf model: text lines of the whole page, assigned to the dots blocks
+        (line images made 50 % taller along the line shape: handwritten page 2 72.2 → 78.0 %, see below)
      ─► Baseer-Nakba + LoRA ft3 reads every line, ft4 reads it again (cross-check)
      ─► main text per block:  handwritten page → ft3        printed page → dots (ft3 cross-checks)
                               Hebrew block → dots text (not checked)   stamp / signature / fingerprint → picture
@@ -69,6 +70,12 @@ keeps both models on it if it has ≥ 22 GB, otherwise only the model in use sta
 CPU RAM (`--offload cpu`, needs more RAM) or freed and reloaded (`--offload unload`, ~1 min per swap). A document is
 processed in two passes (layout of all pages, then all lines), so the models swap once per document.
 
+Line images: `--line-pad 50` (default, `config.LINE_PAD_PCT`) makes every Kraken line image taller by 50 % of the
+line thickness (half above, half below, following the line polygon), so ascenders, descenders and dots cut off
+by the segmentation are kept. Measured in ocr-bench (2026-10-23, ft3 on Kraken lines of 66 Muharaf test pages):
+0 % 63.6 · 15 % 65.6 · 30 % 66.7 · 50 % 67.2 % correct characters; sample page 2: 72.2 → 78.0 %.
+`--line-pad 0` = the line crop of the 2026-10-19 results. Check on a GPU server: `bash scripts/check_pad50.sh`.
+
 Python:
 
 ```python
@@ -130,8 +137,8 @@ arabic_doc_ocr/   pipeline.py (stages) · dots_model.py · htr_model.py · lines
                   llm.py + llm_fix.py (optional LLM correction, own venv: install_llm.sh)
 examples/         4 sample pages with reference text (label.json)
 scripts/          run_all.sh (acceptance run) · evaluate.py · measure.py · make_report.py · push_results.sh ·
-                  check_llm.py (LLM step vs the measured run)
-docs/             HUONG_DAN_CHAY.md (run guide) · SYSTEM_REQUIREMENTS.md · RESULTS.md (generated)
+                  check_llm.py (LLM step vs the measured run) · check_pad50.sh (line padding 50 % + LLM)
+docs/             HUONG_DAN_CHAY.md (run guide) · HUONG_DAN_PAD50.md (test line padding + LLM) · SYSTEM_REQUIREMENTS.md · RESULTS.md (generated)
 tests/            CPU tests with fake models: python -m pytest -q tests
 ```
 

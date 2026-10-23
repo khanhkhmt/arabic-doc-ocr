@@ -64,17 +64,31 @@ def kraken_page(img: Image.Image) -> list[dict] | None:
     return lines
 
 
-def crop_poly(img: Image.Image, line: dict, pad: int = 4) -> Image.Image:
+def crop_poly(img: Image.Image, line: dict, pad: int = 4, noi: int = 0) -> Image.Image:
     """Crop a line along its Kraken polygon: outside the polygon is painted paper colour, so less ink from the lines
-    above / below gets into the line image."""
+    above / below gets into the line image. `noi` = make the line taller by this % of its thickness (half above, half
+    below; mask = polygon drawn at every vertical shift in [-d, d], keeps the shape of curved lines). Thickness =
+    polygon area / width. noi = 0 → the 2026-10-19 crop. Measured in ocr-bench (Đợt 1, #12), see config.LINE_PAD_PCT."""
     W, H = img.size
     x0, y0, x1, y1 = line["box"]
-    x0, y0, x1, y1 = max(0, x0 - pad), max(0, y0 - pad), min(W, x1 + pad), min(H, y1 + pad)
+    poly = line.get("poly") or []
+    d = 0
+    if noi:
+        if len(poly) >= 3:
+            xs = [q[0] for q in poly]
+            area = abs(sum(poly[k][0] * poly[k - 1][1] - poly[k - 1][0] * poly[k][1] for k in range(len(poly)))) / 2
+            thick = area / max(1.0, max(xs) - min(xs))
+        else:
+            thick = y1 - y0
+        d = int(round(noi / 100 * thick / 2))
+    x0, y0, x1, y1 = max(0, x0 - pad), max(0, y0 - d - pad), min(W, x1 + pad), min(H, y1 + d + pad)
     crop = img.convert("RGB").crop((x0, y0, x1, y1))
-    if len(line.get("poly") or []) < 3:
+    if len(poly) < 3:
         return crop
     mask = Image.new("L", crop.size, 0)
-    ImageDraw.Draw(mask).polygon([(x - x0, y - y0) for x, y in line["poly"]], fill=255)
+    draw = ImageDraw.Draw(mask)
+    for dy in range(-d, d + 1):
+        draw.polygon([(x - x0, y - y0 + dy) for x, y in poly], fill=255)
     bg = int(np.percentile(np.asarray(crop.convert("L")), 90))  # paper colour
     return Image.composite(crop, Image.new("RGB", crop.size, (bg, bg, bg)), mask)
 

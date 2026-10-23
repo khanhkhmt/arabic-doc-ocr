@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import zipfile
 
@@ -75,6 +76,20 @@ def test_assign_and_crop():
     assert len(out[0]) == 1 and len(out[1]) == 1 and 2 not in out
     crop = crop_poly(_fake_page(), lines[0])
     assert crop.size == (198, 38)
+    assert crop_poly(_fake_page(), lines[0], noi=0).tobytes() == crop.tobytes()  # noi=0 = 2026-10-19 crop
+
+
+def test_crop_poly_pad():
+    # line 10 px thick (y 15–25), ink at y=13 just above it
+    im = Image.new("RGB", (60, 40), (250, 250, 250))
+    ImageDraw.Draw(im).line([(0, 13), (59, 13)], fill=(0, 0, 0))
+    line = {"box": (10, 15, 50, 25), "poly": [(10, 15), (50, 15), (50, 25), (10, 25)]}
+    c0, c60 = crop_poly(im, line), crop_poly(im, line, noi=60)  # 60 % of 10 px → 3 px above and below
+    assert np.asarray(c0.convert("L"))[13 - 11, 20] > 200      # outside the polygon → paper colour
+    assert c60.size == (c0.size[0], c0.size[1] + 6)
+    assert np.asarray(c60.convert("L"))[13 - 8, 20] < 50       # ink just above the line is kept
+    assert config.LINE_PAD_PCT == 50
+    assert inspect.signature(Pipeline.__init__).parameters["line_pad_pct"].default == 50
 
 
 def test_prepare_and_pages(tmp_path):
@@ -132,6 +147,7 @@ BLOCKS = [{"category": "Title", "bbox": [50, 40, 1150, 140], "text": "عقد ب�
 def _pipe(blocks=BLOCKS) -> Pipeline:
     p = Pipeline.__new__(Pipeline)
     p.models = FakeModels(blocks)
+    p.line_pad_pct = config.LINE_PAD_PCT
     return p
 
 

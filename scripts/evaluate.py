@@ -73,6 +73,8 @@ def main() -> int:
     ap.add_argument("--results", required=True)
     ap.add_argument("--examples", default="examples")
     ap.add_argument("--json", default=None, help="also write the scores to this file")
+    ap.add_argument("--ref", default=None, help="eval.json of an earlier run (e.g. results/two_gpus/eval.json): "
+                                                "also print the change per page")
     a = ap.parse_args()
     rows, out = [], {}
     for lab in sorted(Path(a.examples).glob("*/label.json")):
@@ -92,6 +94,14 @@ def main() -> int:
     print("\n(correct characters % / correct words %)")
     if a.json:
         Path(a.json).write_text(json.dumps(out, indent=1), encoding="utf-8")
+    if a.ref:
+        old = json.loads(Path(a.ref).read_text(encoding="utf-8"))
+        print(f"\nChange vs {a.ref} (correct characters, points):\n")
+        print("| page | main | dots | ft3 | ft4 |\n|---|---:|---:|---:|---:|")
+        for page, sc in out.items():
+            if page in old:
+                print(f"| {page} | " + " | ".join(f"{100 * (sc[k]['chars'] - old[page][k]['chars']):+.2f}"
+                                                for k in ("main", "dots", "ft3", "ft4")) + " |")
     return 0
 
 

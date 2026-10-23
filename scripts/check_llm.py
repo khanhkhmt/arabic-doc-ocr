@@ -1,6 +1,8 @@
 """Check the LLM correction step on the 4 sample pages against the run measured on 2026-10-19 (ocr-bench llm_sua).
 
     .venv/bin/python scripts/check_llm.py            # after bash install_llm.sh; GPUs must be free (no web running)
+    .venv/bin/python scripts/check_llm.py --ocr results/pad50 --name llm_pad50   # LLM on another OCR run (no
+                                                     # measured output to compare with: only before / after scores)
 
 Input: the OCR results stored in results/two_gpus/ (the same files the measured run corrected). The LLM corrects them
 in its own venv (arabic_doc_ocr.llm_fix, exactly as the --llm option does), then:
@@ -11,6 +13,7 @@ Writes results/llm_check.md + .json. Last line: "✔ LLM CHECK …" or "✘ LLM 
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import os
@@ -35,6 +38,12 @@ def _evaluate():
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--ocr", default="results/two_gpus", help="folder with page_N_page.json (OCR results)")
+    ap.add_argument("--name", default="llm_check", help="writes results/<name>.md + .json")
+    a = ap.parse_args()
+    ocr_dir = (ROOT / a.ocr).resolve()
+    measured = ocr_dir == (ROOT / "results" / "two_gpus").resolve()  # the OCR the measured run corrected
     exp = json.loads((ROOT / "tests" / "llm_expected.json").read_text(encoding="utf-8"))
     py = llm_python()
     if py is None:
@@ -42,7 +51,7 @@ def main() -> int:
         return 1
     ocr, units = {}, []
     for page in sorted(exp["pages"]):
-        js = json.loads((ROOT / "results" / "two_gpus" / f"{page}_page.json").read_text(encoding="utf-8"))
+        js = json.loads((ocr_dir / f"{page}_page.json").read_text(encoding="utf-8"))
         ocr[page] = js
         for pi, p in enumerate(js["pages"]):
             for bi, b in enumerate(p["blocks"]):
@@ -69,7 +78,7 @@ def main() -> int:
     rows, same_all, n_all, diffs = [], 0, 0, []
     for page in sorted(exp["pages"]):
         got = {k.split("|", 1)[1]: v for k, v in out["texts"].items() if k.startswith(page + "|")}
-        want = exp["pages"][page]["texts"]
+        want = exp["pages"][page]["texts"] if measured else {}
         same = sum(got.get(k) == v for k, v in want.items())
         same_all, n_all = same_all + same, n_all + len(want)
         diffs += [f"{page} block {k}: measured «{v[:80]}» · now «{got.get(k, '')[:80]}»"
@@ -84,28 +93,36 @@ def main() -> int:
             s = ev.score(label, ev.readings(js)["main"])
             return 100 * s["chars"], 100 * s["words"]
 
-        b, n, m = score({}), score(got), score(want)
+        b, n, m = score({}), score(got), (score(want) if measured else None)
         changed = sum(sum(1 for c in v if not c.get("rejected")) for k, v in out["changes"].items()
                       if k.startswith(page + "|"))
         rows.append((page, ocr[page]["pages"][0]["info"].get("page_type"), b, n, m, same, len(want), changed,
-                     exp["pages"][page]["n_changes"]))
-    L = ["# LLM correction — check on the 4 sample pages", "",
+                     exp["pages"][page]["n_changes"] if measured else None))
+    L = ["# LLM correction — check on the 4 sample pages" + ("" if measured else f" (OCR: {a.ocr})"), "",
          f"{time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())} · {out['model']}@{out['revision'][:10]} · "
          f"{out['method']} · {out['dtype']} · load {out['load_seconds']:.0f} s · total {time.time() - t0:.0f} s", "",
          "Correct characters % / correct words % (scripts/evaluate.py, main text).", "",
          "| page | type | OCR only | + LLM now | + LLM measured 2026-10-19 | blocks identical to measured | "
          "words changed now / measured |", "|---|---|---:|---:|---:|---:|---:|"]
     for page, typ, b, n, m, same, tot, ch, ch0 in rows:
-        L.append(f"| {page} | {typ} | {b[0]:.1f} / {b[1]:.1f} | {n[0]:.1f} / {n[1]:.1f} | {m[0]:.1f} / {m[1]:.1f} | "
-                 f"{same}/{tot} | {ch} / {ch0} |")
+        if measured:
+            L.append(f"| {page} | {typ} | {b[0]:.1f} / {b[1]:.1f} | {n[0]:.1f} / {n[1]:.1f} | {m[0]:.1f} / {m[1]:.1f} | "
+                     f"{same}/{tot} | {ch} / {ch0} |")
+        else:
+            L.append(f"| {page} | {typ} | {b[0]:.1f} / {b[1]:.1f} | {n[0]:.1f} / {n[1]:.1f} | — | — | {ch} / — |")
     if diffs:
         L += ["", "First differences:", ""] + [f"- {x}" for x in diffs]
     (ROOT / "results").mkdir(exist_ok=True)
-    (ROOT / "results" / "llm_check.md").write_text("\n".join(L) + "\n", encoding="utf-8")
-    (ROOT / "results" / "llm_check.json").write_text(json.dumps({"rows": rows, "identical": same_all, "blocks": n_all,
-                                                                 "out": out}, ensure_ascii=False, indent=1),
-                                                     encoding="utf-8")
+    (ROOT / "results" / f"{a.name}.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+    (ROOT / "results" / f"{a.name}.json").write_text(json.dumps({"ocr": a.ocr, "rows": rows, "identical": same_all,
+                                                                 "blocks": n_all, "out": out},
+                                                                ensure_ascii=False, indent=1), encoding="utf-8")
     print("\n".join(L))
+    if not measured:
+        avg = [sum(r[i][0] for r in rows) / len(rows) for i in (2, 3)]
+        print(f"✔ LLM ON {a.ocr}: main text, mean of 4 pages {avg[0]:.2f} → {avg[1]:.2f} % correct characters "
+              f"({avg[1] - avg[0]:+.2f})")
+        return 0
     ok = same_all == n_all
     print(("✔" if ok else "⚠" if same_all >= 0.9 * n_all else "✘")
           + f" LLM CHECK: {same_all}/{n_all} blocks identical to the measured run"
